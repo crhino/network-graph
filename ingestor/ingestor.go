@@ -72,15 +72,20 @@ func (fi *FirehoseIngestor) Run(signals <-chan os.Signal, ready chan<- struct{})
 
 			remoteIp := network.IP(strings.Split(remoteAddr, ":")[0])
 
-			fi.logger.Debug("adding-edge", lager.Data{"source": ip, "target": remoteIp})
-
 			fi.network.AddNode(ip, fmt.Sprintf("%s/%s", msg.GetJob(), msg.GetIndex()))
 			fi.network.AddNode(remoteIp, "")
 
 			switch peerType {
 			case events.PeerType_Client:
+				fi.logger.Debug("adding-edge", lager.Data{"source": ip, "target": remoteIp})
 				fi.network.AddEdge(ip, remoteIp)
 			case events.PeerType_Server:
+				// Skip gorouter Server since we receive both client and server msgs for same event with same remote IP
+				// Should file a bug
+				if msg.GetOrigin() == "gorouter" {
+					continue
+				}
+				fi.logger.Debug("adding-edge", lager.Data{"source": remoteIp, "target": ip})
 				fi.network.AddEdge(remoteIp, ip)
 			}
 

@@ -27,5 +27,6 @@ func (n *dotHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 		resp.Write([]byte(err.Error()))
 	}
 
+	resp.Header().Add("Access-Control-Allow-Origin", "*")
 	resp.Write(data)
 }

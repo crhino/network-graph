@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+  <title>Network</title>
+
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.min.js"></script>
+  <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.min.css" rel="stylesheet" type="text/css" />
+
+  <style type="text/css">
+    #mynetwork {
+      width: 1200px;
+      height: 800px;
+      border: 1px solid lightgray;
+    }
+  </style>
+</head>
+<body>
+
+<p>
+  Network Graph of CF Firehose Events
+</p>
+
+<div id="mynetwork"></div>
+
+<script type="text/javascript">
+  $.get("http://localhost:8080/network/dot", function( data ) {
+    // create a network
+    var container = document.getElementById('mynetwork');
+
+    var parsedData = vis.network.convertDot(data);
+
+    var data = {
+      nodes: parsedData.nodes,
+      edges: parsedData.edges
+    }
+
+    var options = parsedData.options;
+    <!-- options.layout = { -->
+    <!--   hierarchical: { -->
+	<!-- sortMethod: "directed" -->
+    <!--   } -->
+    <!-- }; -->
+    var network = new vis.Network(container, data, options);
+  });
+</script>
+
+</body>
+</html>

@@ -27,7 +27,8 @@ type node struct {
 }
 
 type edge struct {
-	Count uint `json:"count"`
+	Count       uint         `json:"count"`
+	StatusCodes map[int]uint `json:"status_codes"`
 }
 
 func NewGraph() Graph {
@@ -80,8 +81,11 @@ func (n *network) generateDOTGraph(buffer *bytes.Buffer) (*bytes.Buffer, error) 
 	defer n.Unlock()
 
 	for k, v := range n.graph {
-		if v.Id == "" {
-			continue
+		if v.Id != "" {
+			_, err = buffer.WriteString(fmt.Sprintf("    \"%s\" [label=\"%s\"];\n", k, v.Id))
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		buffer, err = v.generateDOTGraph(k, buffer)
@@ -114,8 +118,8 @@ func (n *network) MarshalJSON() ([]byte, error) {
 }
 
 func (n *node) generateDOTGraph(nodeName IP, buffer *bytes.Buffer) (*bytes.Buffer, error) {
-	for k, _ := range n.Outgoing {
-		_, err := buffer.WriteString(fmt.Sprintf("    \"%s\" -> \"%s\";", nodeName, k))
+	for k, e := range n.Outgoing {
+		_, err := buffer.WriteString(fmt.Sprintf("    \"%s\" -> \"%s\" [label=\"%d\"];", nodeName, k, e.Count))
 		if err != nil {
 			return nil, err
 		}
